@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Plugin from '../src/plugin'
+import { Logging } from 'serverless/classes/Plugin'
 import {
   configDefault,
   configMin,
@@ -18,8 +19,33 @@ import {
 } from './helpers/target'
 import { ConcurrencyFunction } from 'src/@types'
 
-const plugin = new Plugin(serverless)
+const mockProgress: ReturnType<Logging['progress']['get']> = {
+  namespace: 'test',
+  name: 'test',
+  update: jest.fn(),
+  info: jest.fn(),
+  notice: jest.fn(),
+  remove: jest.fn(),
+}
 
+const mockLogging: Logging = {
+  log: {
+    info: jest.fn(),
+    success: jest.fn(),
+    warning: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+    notice: jest.fn(),
+    verbose: jest.fn(),
+  },
+  writeText: jest.fn(),
+  progress: {
+    get: jest.fn(() => mockProgress),
+    create: jest.fn(() => mockProgress),
+  },
+}
+
+const plugin = new Plugin(serverless, options, mockLogging)
 describe('Validate', () => {
   it('should validate true', () => {
     expect(plugin.validate([configMin])).toBeUndefined()
